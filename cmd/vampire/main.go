@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"vampire/pkg/txtreader"
 
 	"github.com/devinherron/dice"
 )
 
 func main() {
+	txtreader.ReadFile("./assets/_Thousand Year Old Vampire.txt")
 	test := roll()
 	fmt.Println(test)
 }
