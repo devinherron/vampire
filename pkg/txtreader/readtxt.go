@@ -1,54 +1,12 @@
-package vampire
+package txtreader
 
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"log"
-	"mime/multipart"
 	"os"
 	"regexp"
-	"strings"
 )
-
-func readSourceFile(file multipart.File) {
-	bio := bufio.NewReader(os.Stdin)
-	for {
-		line, err := bio.ReadBytes('\n')
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			panic(err)
-		}
-		sline := strings.TrimRight(string(line), "\n")
-		re := regexp.MustCompile(`^[0-9]{1,2}[a-c]$`)
-		promptNumber := re.FindString(sline)
-		if promptNumber != "" {
-			var promptText string = ""
-			for {
-				line, err := bio.ReadBytes('\n')
-				if err == io.EOF {
-					break
-				}
-				if err != nil {
-					panic(err)
-				}
-				sline := strings.TrimRight(string(line), "\n")
-
-				if sline != "" {
-					promptText += sline
-				} else {
-					break
-				}
-			}
-			fmt.Printf("%s: %s\n", promptNumber, promptText)
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-}
 
 func ReadFile(filename string) {
 	f, err := os.Open(filename)
