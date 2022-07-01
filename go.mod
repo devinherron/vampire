@@ -2,4 +2,4 @@ module vampire
 
 go 1.16
 
-require github.com/devinherron/dice v0.0.0-20210710011858-45999b70daf9
+require github.com/devinherron/dice v0.0.0-20220701033449-2d3a2aae0c15
