@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	txtreader.ReadFile("./assets/_Thousand Year Old Vampire.txt")
+	prompts := txtreader.ReadFile("./assets/_Thousand Year Old Vampire.txt")
+	fmt.Println(prompts[22][0])
 	test := roll()
 	fmt.Println(test)
 }
