@@ -8,7 +8,13 @@ import (
 	"strconv"
 )
 
+var (
+	re = regexp.MustCompile(`^[0-9]{1,2}[a-c]$`)
+)
+
 func ReadFile(filename string) [][]string {
+	const numPrompts int = 81
+
 	f, err := os.Open(filename)
 
 	if err != nil {
@@ -20,7 +26,7 @@ func ReadFile(filename string) [][]string {
 		}
 	}()
 
-	prompts := make([][]string, 81)
+	prompts := make([][]string, numPrompts)
 
 	s := bufio.NewScanner(f)
 	start := false
@@ -32,31 +38,19 @@ func ReadFile(filename string) [][]string {
 			break
 		}
 
-		re := regexp.MustCompile(`^[0-9]{1,2}[a-c]$`)
-		prompt := re.FindString(s.Text())
-		var num int
-		if prompt != "" {
-			num, err = strconv.Atoi(prompt[:len(prompt)-1])
-			letter := prompt[len(prompt)-1:]
-			var entry int
-			switch letter {
-			case "a":
-				entry = 0
-			case "b":
-				entry = 1
-			case "c":
-				entry = 2
-			default:
-				log.Fatal("Invalid prompt entry.")
-			}
+		prompt, entry := GetPrompt(s.Text())
+		if prompt != 0 {
 
-			if len(prompts[num]) == 0 {
-				prompts[num] = make([]string, 3)
-			}
 			var text string = ""
 			for {
 				s.Scan()
-				if s.Text() == "________________" {
+				newPrompt, newEntry := GetPrompt(s.Text())
+
+				if newPrompt != 0 && newPrompt != prompt {
+					prompt = newPrompt
+					entry = newEntry
+					text = s.Text()
+				} else if s.Text() == "________________" {
 					break
 				} else if s.Text() != "" {
 					text += s.Text()
@@ -65,7 +59,11 @@ func ReadFile(filename string) [][]string {
 				}
 			}
 
-			prompts[num][entry] = text
+			if len(prompts[prompt]) == 0 {
+				prompts[prompt] = make([]string, 3)
+			}
+
+			prompts[prompt][entry] = text
 		}
 
 		if err != nil {
@@ -78,4 +76,32 @@ func ReadFile(filename string) [][]string {
 	}
 
 	return prompts
+}
+
+func GetPrompt(text string) (int, int) {
+	prompt := re.FindString(text)
+	if prompt == "" {
+		return 0, 0
+	}
+
+	num, err := strconv.Atoi(prompt[:len(prompt)-1])
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	letter := prompt[len(prompt)-1:]
+	var entry int
+	switch letter {
+	case "a":
+		entry = 0
+	case "b":
+		entry = 1
+	case "c":
+		entry = 2
+	default:
+		log.Fatal("Invalid prompt entry.")
+	}
+
+	return num, entry
 }

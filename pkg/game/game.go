@@ -40,6 +40,7 @@ func NewGame(prompts [][]string) {
 
 		fmt.Printf("[%d] %s\n", currentPrompt, prompts[currentPrompt][currentEntry])
 		visited[currentPrompt][currentEntry] = true
+		currentEntry = 0
 
 		if currentPrompt > 71 {
 			finished = true
