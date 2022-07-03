@@ -2,6 +2,7 @@ package txtreader
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -12,8 +13,9 @@ var (
 	re = regexp.MustCompile(`^[0-9]{1,2}[a-c]$`)
 )
 
-func ReadFile(filename string) [][]string {
+func ReadPrompts(filename string) [][]string {
 	const numPrompts int = 81
+	var totalPrompts int
 
 	f, err := os.Open(filename)
 
@@ -59,11 +61,21 @@ func ReadFile(filename string) [][]string {
 				}
 			}
 
+			if prompt+1 >= cap(prompts) {
+				prompts = append(prompts, make([]string, 3))
+			}
+
 			if len(prompts[prompt]) == 0 {
 				prompts[prompt] = make([]string, 3)
 			}
 
-			prompts[prompt][entry] = text
+			if text == "" {
+				fmt.Printf("Prompt [%d][%d] had invalid text.", prompt, entry)
+			} else {
+				totalPrompts++
+				prompts[prompt][entry] = text
+			}
+
 		}
 
 		if err != nil {
@@ -73,6 +85,10 @@ func ReadFile(filename string) [][]string {
 	err = s.Err()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if totalPrompts < 9 {
+		log.Fatal("Invalid prompts file. Fewer than 9 prompts found.")
 	}
 
 	return prompts

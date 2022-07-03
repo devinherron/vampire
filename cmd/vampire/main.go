@@ -14,6 +14,6 @@ func init() {
 }
 
 func main() {
-	prompts := txtreader.ReadFile(file)
+	prompts := txtreader.ReadPrompts(file)
 	game.NewGame(prompts)
 }
