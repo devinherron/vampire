@@ -1,12 +1,20 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/devinherron/dice"
 )
 
+type Game struct {
+	Prompts [][]string
+	Visited [][]bool
+}
+
 func NewGame(prompts [][]string) {
+
 	visited := make([][]bool, 81)
 	finished := false
 
@@ -48,12 +56,24 @@ func NewGame(prompts [][]string) {
 
 		var input string
 		fmt.Scanln(&input)
-
 		if input == "quit" {
 			finished = true
+		} else if input == "save" {
+			Save(prompts, visited)
 		}
 	}
 
+}
+
+func Save(prompts [][]string, visited [][]bool) {
+	game := Game{prompts, visited}
+
+	f, err := os.OpenFile("save.json", os.O_CREATE, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+	}
+	encoder := json.NewEncoder(f)
+	encoder.Encode(game)
 }
 
 func Roll() int {
