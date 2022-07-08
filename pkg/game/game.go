@@ -1,59 +1,103 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 
 	"github.com/devinherron/dice"
 )
 
-func NewGame(prompts [][]string) {
-	visited := make([][]bool, 81)
+type Game struct {
+	Prompts [][]string
+	Visited [][]bool
+	Prompt  int
+	Entry   int
+}
+
+func Run(game Game, new bool) {
 	finished := false
 
-	currentPrompt := 1
-	currentEntry := 0
+	if new {
+		Advance(&game)
+	}
 
 	for !finished {
-		result := Roll()
-		if currentPrompt+result < 1 {
-			currentPrompt = 1
-		} else {
-			currentPrompt += result
-		}
+		fmt.Printf("[%d] %s\n", game.Prompt, game.Prompts[game.Prompt][game.Entry])
+		game.Visited[game.Prompt][game.Entry] = true
+		game.Entry = 0
 
-		if len(visited[currentPrompt]) == 0 {
-			visited[currentPrompt] = make([]bool, 3)
-		}
-
-		for visited[currentPrompt][currentEntry] {
-			if currentEntry > 1 {
-				currentPrompt++
-				currentEntry = 0
-
-				if len(visited[currentPrompt]) == 0 {
-					visited[currentPrompt] = make([]bool, 3)
-				}
-			} else {
-				currentEntry++
-			}
-		}
-
-		fmt.Printf("[%d] %s\n", currentPrompt, prompts[currentPrompt][currentEntry])
-		visited[currentPrompt][currentEntry] = true
-		currentEntry = 0
-
-		if currentPrompt > 71 {
+		if game.Prompt > 71 {
 			finished = true
 		}
 
 		var input string
 		fmt.Scanln(&input)
 
+		Advance(&game)
 		if input == "quit" {
 			finished = true
+		} else if input == "save" {
+			Save(game)
 		}
 	}
+}
 
+func Load() {
+	f, err := ioutil.ReadFile("save.json")
+	if err != nil {
+		log.Fatal("Error when opening file: ", err)
+	}
+	var game Game
+	err = json.Unmarshal(f, &game)
+	if err != nil {
+		log.Fatal("Error during Unmarshal(): ", err)
+	}
+
+	Run(game, false)
+}
+
+func New(prompts [][]string) {
+	visited := make([][]bool, 81)
+
+	Run(Game{prompts, visited, 1, 0}, true)
+}
+
+func Save(game Game) {
+	f, err := os.OpenFile("save.json", os.O_CREATE, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+	}
+	encoder := json.NewEncoder(f)
+	encoder.Encode(game)
+}
+
+func Advance(game *Game) {
+	result := Roll()
+	if game.Prompt+result < 1 {
+		game.Prompt = 1
+	} else {
+		game.Prompt += result
+	}
+
+	if len(game.Visited[game.Prompt]) == 0 {
+		game.Visited[game.Prompt] = make([]bool, 3)
+	}
+
+	for game.Visited[game.Prompt][game.Entry] {
+		if game.Entry > 1 {
+			game.Prompt++
+			game.Entry = 0
+
+			if len(game.Visited[game.Prompt]) == 0 {
+				game.Visited[game.Prompt] = make([]bool, 3)
+			}
+		} else {
+			game.Entry++
+		}
+	}
 }
 
 func Roll() int {

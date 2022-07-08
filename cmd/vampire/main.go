@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"strings"
 	"vampire/pkg/game"
 	"vampire/pkg/txtreader"
 )
@@ -14,6 +16,23 @@ func init() {
 }
 
 func main() {
+	var input string
+	fmt.Println("(N)ew Game or (L)oad Game")
+	fmt.Scanln(&input)
+	input = strings.ToLower(input)
+	switch input {
+	case "n":
+		new()
+	case "l":
+		load()
+	}
+}
+
+func load() {
+	game.Load()
+}
+
+func new() {
 	prompts := txtreader.ReadPrompts(file)
-	game.NewGame(prompts)
+	game.New(prompts)
 }
