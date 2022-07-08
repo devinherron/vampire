@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	re = regexp.MustCompile(`^[0-9]{1,2}[a-c]$`)
+	re = regexp.MustCompile(`^[0-9]{1,2}[a-c]`)
 )
 
 func ReadPrompts(filename string) [][]string {
@@ -48,7 +48,8 @@ func ReadPrompts(filename string) [][]string {
 				s.Scan()
 				newPrompt, newEntry := GetPrompt(s.Text())
 
-				if newPrompt != 0 && newPrompt != prompt {
+				if newPrompt != 0 && (newPrompt != prompt || newEntry != entry) {
+					prompts, totalPrompts = SavePrompt(prompts, prompt, entry, text, totalPrompts)
 					prompt = newPrompt
 					entry = newEntry
 					text = s.Text()
@@ -61,21 +62,7 @@ func ReadPrompts(filename string) [][]string {
 				}
 			}
 
-			if prompt+1 >= cap(prompts) {
-				prompts = append(prompts, make([]string, 3))
-			}
-
-			if len(prompts[prompt]) == 0 {
-				prompts[prompt] = make([]string, 3)
-			}
-
-			if text == "" {
-				fmt.Printf("Prompt [%d][%d] had invalid text.", prompt, entry)
-			} else {
-				totalPrompts++
-				prompts[prompt][entry] = text
-			}
-
+			prompts, totalPrompts = SavePrompt(prompts, prompt, entry, text, totalPrompts)
 		}
 
 		if err != nil {
@@ -120,4 +107,23 @@ func GetPrompt(text string) (int, int) {
 	}
 
 	return num, entry
+}
+
+func SavePrompt(prompts [][]string, prompt int, entry int, text string, totalPrompts int) ([][]string, int) {
+	if prompt+1 >= cap(prompts) {
+		prompts = append(prompts, make([]string, 3))
+	}
+
+	if len(prompts[prompt]) == 0 {
+		prompts[prompt] = make([]string, 3)
+	}
+
+	if text == "" {
+		fmt.Printf("Prompt [%d][%d] had invalid text.", prompt, entry)
+	} else {
+		totalPrompts++
+		prompts[prompt][entry] = text
+	}
+
+	return prompts, totalPrompts
 }

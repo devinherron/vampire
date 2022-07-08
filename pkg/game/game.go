@@ -10,6 +10,12 @@ import (
 	"github.com/devinherron/dice"
 )
 
+var letters = map[int]string{
+	0: "a",
+	1: "b",
+	2: "c",
+}
+
 type Game struct {
 	Prompts [][]string
 	Visited [][]bool
@@ -25,7 +31,7 @@ func Run(game Game, new bool) {
 	}
 
 	for !finished {
-		fmt.Printf("[%d] %s\n", game.Prompt, game.Prompts[game.Prompt][game.Entry])
+		fmt.Printf("[%d%s] %s\n", game.Prompt, letters[game.Entry], game.Prompts[game.Prompt][game.Entry])
 		game.Visited[game.Prompt][game.Entry] = true
 		game.Entry = 0
 
